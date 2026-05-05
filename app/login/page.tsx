@@ -160,7 +160,7 @@ export default function Login() {
               </button>
 
               {/* Demo info */}
-              <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
+              {/* <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
                 <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2">Akun Demo</p>
                 <div className="space-y-1.5 text-xs text-blue-600">
                   <div className="flex justify-between">
@@ -172,7 +172,7 @@ export default function Login() {
                     <span className="font-mono bg-blue-100 px-2 py-0.5 rounded">petugas / petugas123</span>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </form>
           </div>
         </div>
