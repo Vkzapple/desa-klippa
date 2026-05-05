@@ -48,10 +48,10 @@ export default function PubLayout({ children }: { children: React.ReactNode }) {
 
             {/* Right side */}
             <div className="flex items-center gap-2">
-              <Link href="/login"
+              {/* <Link href="/login"
                 className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-blue-700 font-bold text-sm hover:bg-blue-50 transition-all shadow">
                  Login
-              </Link>
+              </Link> */}
               <button onClick={() => setMobileOpen(!mobileOpen)}
                 className="lg:hidden w-9 h-9 rounded-xl bg-white/15 text-white flex items-center justify-center hover:bg-white/25 transition">
                 {mobileOpen ? "✕" : "☰"}

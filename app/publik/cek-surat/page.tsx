@@ -159,7 +159,7 @@ export default function CekSuratPage() {
           <ul className="space-y-1 text-xs text-blue-700">
             <li>• Surat dengan status <strong>Selesai</strong> bisa diambil di kantor desa dengan membawa KTP asli</li>
             <li>• Proses pembuatan surat memerlukan <strong>1–3 hari kerja</strong></li>
-            <li>• Jika ada kendala, hubungi kami di <strong>+62 89526942476</strong></li>
+            <li>• Jika ada kendala, hubungi kami di <strong>061 77838357</strong></li>
           </ul>
         </div>
       </div>
