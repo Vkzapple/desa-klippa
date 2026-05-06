@@ -97,7 +97,6 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   <div class="meta">
     <div class="meta-left">
       <table>
-        <tr><td>Nomor</td><td>:</td></tr>
         <tr><td>Lamp</td><td>:</td></tr>
         <tr><td>H a l</td><td>: <strong><em>${surat.jenisSurat}</em></strong></td></tr>
       </table>
@@ -117,7 +116,7 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   <div class="judul">
     <h2>${surat.jenisSurat}</h2>
   </div>
-  <div style="text-align:center;font-size:11pt;margin-bottom:16px">Nomor : 070/</div>
+  <div style="text-align:center;font-size:11pt;margin-bottom:16px">Nomor </div>
 
   <!-- ISI -->
   <div class="isi">
