@@ -5,11 +5,6 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   const todayLong = tgl.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const d = surat.data;
 
-  // Parse nomor surat → nomor urut saja
-  const nomorUrut = surat.nomorSurat.split('/')[1] || '001';
-  const tahun = tgl.getFullYear();
-  const nomorResmi = `070/${nomorUrut}/${tahun}`;
-
   const getIsiBody = () => {
     const jenisMap: Record<string, string> = {
       'Surat Keterangan Domisili': `
@@ -58,10 +53,7 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   body { font-family:'Times New Roman',Times,serif; font-size:12pt; color:#000; background:#fff; }
   .page { width:210mm; min-height:297mm; margin:0 auto; padding:20mm 25mm 20mm 30mm; }
   .kop { display:flex; align-items:center; gap:15px; padding-bottom:8px; border-bottom:3px solid #000; margin-bottom:16px; }
-  .kop-logo { width:70px; height:70px; flex-shrink:0; }
   .kop-logo-img { width:70px; height:70px; object-fit:contain; flex-shrink:0; border-radius:4px; }
-  .kop-logo img { width:100%; height:100%; object-fit:contain; }
-  .kop-logo-placeholder { width:70px; height:70px; border:2px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
   .kop-text { text-align:center; flex:1; }
   .kop-text .line1 { font-size:13pt; font-weight:bold; text-transform:uppercase; }
   .kop-text .line2 { font-size:13pt; font-weight:bold; text-transform:uppercase; }
@@ -69,12 +61,10 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   .kop-text .alamat { font-size:9pt; margin-top:3px; }
   .judul { text-align:center; margin:18px 0 6px; }
   .judul h2 { font-size:14pt; text-transform:uppercase; text-decoration:underline; font-weight:bold; letter-spacing:1px; }
-  .nomor-surat { text-align:center; font-size:11pt; margin-bottom:16px; }
   .meta { display:grid; grid-template-columns:1fr 1fr; gap:0; margin-bottom:16px; font-size:11pt; }
-  .meta-left table td { padding:1px 0; vertical-align:top; }
+  .meta-left table td { padding:2px 0; vertical-align:top; }
   .meta-left table td:first-child { width:55px; }
   .meta-right { text-align:right; }
-  .meta-right .kepada { margin-top:0; }
   .isi { font-size:12pt; line-height:1.8; margin-bottom:16px; }
   .ttd-area { margin-top:30px; display:flex; justify-content:flex-end; }
   .ttd-box { text-align:center; min-width:230px; }
@@ -91,9 +81,10 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
 </head>
 <body>
 <div class="page">
+
   <!-- KOP SURAT -->
   <div class="kop">
-    <img src="/logo-2.jpg" alt="Logo Desa" class="kop-logo-img" onerror="this.style.display='none'" />
+    <img src="/logo-desa.png" alt="Logo Desa" class="kop-logo-img" onerror="this.style.display='none'" />
     <div class="kop-text">
       <div class="line1">PEMERINTAH KABUPATEN DELI SERDANG</div>
       <div class="line2">KECAMATAN PERCUT SEI TUAN</div>
@@ -106,8 +97,8 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   <div class="meta">
     <div class="meta-left">
       <table>
-        <tr><td>Nomor</td><td>: ${nomorResmi}</td></tr>
-        <tr><td>Lamp</td><td>: ---</td></tr>
+        <tr><td>Nomor</td><td>:</td></tr>
+        <tr><td>Lamp</td><td>:</td></tr>
         <tr><td>H a l</td><td>: <strong><em>${surat.jenisSurat}</em></strong></td></tr>
       </table>
     </div>
@@ -126,7 +117,7 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
   <div class="judul">
     <h2>${surat.jenisSurat}</h2>
   </div>
-  <div class="nomor-surat">Nomor : ${nomorResmi}</div>
+  <div style="text-align:center;font-size:11pt;margin-bottom:16px">Nomor : 070/</div>
 
   <!-- ISI -->
   <div class="isi">
@@ -147,7 +138,7 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
 </div>
 
 <div class="no-print" style="text-align:center;padding:20px;background:#f1f5f9">
-  <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:12px 32px;font-size:15px;border-radius:10px;cursor:pointer;margin-right:10px;font-family:sans-serif;font-weight:700">🖨️ Cetak Surat</button>
+  <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:12px 32px;font-size:15px;border-radius:10px;cursor:pointer;margin-right:10px;font-family:sans-serif;font-weight:700"> Cetak Surat</button>
   <button onclick="window.close()" style="background:#64748b;color:#fff;border:none;padding:12px 32px;font-size:15px;border-radius:10px;cursor:pointer;font-family:sans-serif;font-weight:700">✕ Tutup</button>
 </div>
 </body>

@@ -7,19 +7,16 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
   Area,
   AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
 } from "recharts";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"];
 
-// Custom tooltip recharts
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -33,7 +30,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Beranda() {
-  const { penduduk, suratList, beritaList, isLoggedIn, currentUser, jadwalPelayanan } = useStore();
+  const {
+    penduduk, suratList, beritaList,
+    isLoggedIn, currentUser, jadwalPelayanan,
+    pengajuanList, updatePengajuan,
+  } = useStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -86,6 +87,15 @@ export default function Beranda() {
     };
   }, [penduduk, suratList]);
 
+  // Pengajuan publik yang masuk & belum selesai
+  const pengajuanMasuk = useMemo(() =>
+    [...pengajuanList]
+      .sort((a, b) => new Date(b.tanggalAjuan).getTime() - new Date(a.tanggalAjuan).getTime())
+      .slice(0, 5),
+    [pengajuanList]
+  );
+  const totalPengajuanDiproses = pengajuanList.filter(p => p.status === "diproses").length;
+
   const todayName = new Date().toLocaleDateString("id-ID", { weekday: "long" });
   const jadwalHariIni = jadwalPelayanan.find(j => j.hari.toLowerCase() === todayName.toLowerCase());
 
@@ -98,11 +108,21 @@ export default function Beranda() {
   if (!isLoggedIn) return null;
 
   const quickLinks = [
-    { href: "/surat", icon: "📄", label: "Buat Surat", bg: "linear-gradient(135deg,#2563eb,#1d4ed8)" },
-    { href: "/penduduk", icon: "👨‍👩‍👧", label: "Data Warga", bg: "linear-gradient(135deg,#0ea5e9,#0284c7)" },
-    { href: "/arsip", icon: "🗂️", label: "Arsip Surat", bg: "linear-gradient(135deg,#6366f1,#4f46e5)" },
-    { href: "/laporan", icon: "📊", label: "Laporan", bg: "linear-gradient(135deg,#8b5cf6,#7c3aed)" },
+    { href: "/surat",     icon: "📄", label: "Buat Surat",  bg: "linear-gradient(135deg,#2563eb,#1d4ed8)" },
+    { href: "/penduduk",  icon: "👨‍👩‍👧", label: "Data Warga",  bg: "linear-gradient(135deg,#0ea5e9,#0284c7)" },
+    { href: "/arsip",     icon: "🗂️", label: "Arsip Surat", bg: "linear-gradient(135deg,#6366f1,#4f46e5)" },
+    { href: "/laporan",   icon: "📊", label: "Laporan",      bg: "linear-gradient(135deg,#8b5cf6,#7c3aed)" },
   ];
+
+  const statusBadge = (status: string) => {
+    if (status === "diproses") return "bg-yellow-100 text-yellow-700";
+    if (status === "selesai")  return "bg-green-100 text-green-700";
+    if (status === "ditolak")  return "bg-red-100 text-red-600";
+    return "bg-slate-100 text-slate-500";
+  };
+
+  const handleTerima = (id: string) => updatePengajuan(id, { status: "selesai" });
+  const handleTolak  = (id: string) => updatePengajuan(id, { status: "ditolak", alasanTolak: "Ditolak oleh admin" });
 
   return (
     <div className="min-h-screen bg-blue-50 lg:pl-64">
@@ -132,13 +152,13 @@ export default function Beranda() {
           </Link>
         </div>
 
-        {/* Stat cards */}
+        {/* Stat cards — tambah badge notif pengajuan */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total Warga", value: stats.totalWarga, sub: `${stats.totalKK} Kepala Keluarga`, light: "bg-blue-50" },
-            { label: "Surat Terbaru", value: stats.bulanIni, sub: "Bulan data terakhir", light: "bg-sky-50" },
-            { label: "Sedang Diproses", value: stats.suratDiproses, sub: "Perlu tindakan", light: "bg-amber-50" },
-            { label: "Total Surat", value: stats.totalSurat, sub: "Semua waktu", light: "bg-violet-50" },
+            { label: "Total Warga",      value: stats.totalWarga,      sub: `${stats.totalKK} Kepala Keluarga`, light: "bg-blue-50" },
+            { label: "Surat Terbaru",    value: stats.bulanIni,        sub: "Bulan data terakhir",             light: "bg-sky-50" },
+            { label: "Sedang Diproses",  value: stats.suratDiproses,   sub: "Perlu tindakan",                  light: "bg-amber-50" },
+            { label: "Total Surat",      value: stats.totalSurat,      sub: "Semua waktu",                     light: "bg-violet-50" },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-2xl p-5 shadow-sm border border-blue-100 hover:shadow-md hover:-translate-y-0.5 transition-all">
               <div className="flex items-start justify-between mb-3">
@@ -167,33 +187,17 @@ export default function Beranda() {
               <AreaChart data={stats.chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSurat" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop offset="5%"  stopColor="#3b82f6" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}   />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis
-                  dataKey="bulan"
-                  tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 600 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
-                  axisLine={false}
-                  tickLine={false}
-                  allowDecimals={false}
-                />
+                <XAxis dataKey="bulan" tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#2563eb"
-                  strokeWidth={2.5}
-                  fill="url(#colorSurat)"
+                <Area type="monotone" dataKey="count" stroke="#2563eb" strokeWidth={2.5} fill="url(#colorSurat)"
                   dot={{ fill: "#2563eb", r: 4, strokeWidth: 2, stroke: "#fff" }}
-                  activeDot={{ r: 6, fill: "#1d4ed8", stroke: "#fff", strokeWidth: 2 }}
-                />
+                  activeDot={{ r: 6, fill: "#1d4ed8", stroke: "#fff", strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -236,7 +240,7 @@ export default function Beranda() {
                     <p className="text-xs text-slate-400 truncate">{s.namaPemohon} · {s.nomorSurat}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                    s.status === "selesai" ? "bg-green-100 text-green-700"
+                    s.status === "selesai"  ? "bg-green-100 text-green-700"
                     : s.status === "diproses" ? "bg-yellow-100 text-yellow-700"
                     : "bg-slate-100 text-slate-500"
                   }`}>
@@ -252,6 +256,7 @@ export default function Beranda() {
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-blue-100">
             <h2 className="font-extrabold text-slate-900 text-base mb-4">Jenis Terbanyak</h2>
             <div className="space-y-3">
+              {jenisCounts.length === 0 && <p className="text-slate-400 text-xs text-center py-2">Belum ada data</p>}
               {jenisCounts.map(([jenis, count], i) => {
                 const pct = stats.totalSurat > 0 ? Math.round((count / stats.totalSurat) * 100) : 0;
                 const colors = ["bg-blue-500","bg-sky-400","bg-indigo-400","bg-violet-400"];
@@ -280,10 +285,136 @@ export default function Beranda() {
                     <p className="text-xs text-slate-400 mt-0.5">{b.tanggal} · {b.kategori}</p>
                   </div>
                 ))}
+                {beritaList.length === 0 && <p className="text-slate-400 text-xs text-center py-2">Belum ada berita</p>}
               </div>
             </div>
           </div>
         </div>
+
+        {/* ══════════════════════════════════════════════════
+            WIDGET BARU: PENGAJUAN MASUK DARI PUBLIK
+        ══════════════════════════════════════════════════ */}
+        <div className="mt-5 bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+          {/* Header widget */}
+          <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-3 items-center justify-between"
+            style={{ background: "linear-gradient(135deg,#eff6ff,#dbeafe)" }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-md">📥</div>
+              <div>
+                <h2 className="font-extrabold text-slate-900 text-base">Pengajuan Masuk</h2>
+                <p className="text-slate-500 text-xs">Permohonan surat dari masyarakat</p>
+              </div>
+              {totalPengajuanDiproses > 0 && (
+                <span className="ml-1 px-2.5 py-0.5 rounded-full bg-red-500 text-white text-xs font-extrabold animate-pulse">
+                  {totalPengajuanDiproses} baru
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>Diproses</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400 inline-block"></span>Selesai</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block"></span>Ditolak</span>
+            </div>
+          </div>
+
+          {/* Tabel pengajuan */}
+          {pengajuanList.length === 0 ? (
+            <div className="text-center py-12 text-slate-400">
+              <div className="text-4xl mb-2">📭</div>
+              <p className="font-semibold text-sm">Belum ada pengajuan masuk</p>
+              <p className="text-xs mt-1">Pengajuan dari halaman publik akan muncul di sini</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-xs text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3.5 text-left font-bold">Pemohon</th>
+                    <th className="px-5 py-3.5 text-left font-bold hidden sm:table-cell">Jenis Surat</th>
+                    <th className="px-5 py-3.5 text-left font-bold hidden md:table-cell">Keperluan</th>
+                    <th className="px-5 py-3.5 text-left font-bold hidden md:table-cell">Tgl Ajuan</th>
+                    <th className="px-5 py-3.5 text-center font-bold">Status</th>
+                    <th className="px-5 py-3.5 text-center font-bold">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pengajuanMasuk.map((p, i) => (
+                    <tr key={p.id}
+                      className={`border-t border-slate-100 hover:bg-blue-50/50 transition-colors ${i % 2 === 0 ? "" : "bg-slate-50/30"}`}>
+
+                      {/* Pemohon */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 shrink-0">
+                            {p.nama.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900 text-sm">{p.nama}</p>
+                            <p className="text-xs text-slate-400 font-mono">{p.nik}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Jenis Surat */}
+                      <td className="px-5 py-3.5 hidden sm:table-cell">
+                        <span className="text-xs font-semibold text-slate-700">{p.jenisSurat}</span>
+                      </td>
+
+                      {/* Keperluan */}
+                      <td className="px-5 py-3.5 hidden md:table-cell">
+                        <p className="text-xs text-slate-500 max-w-[180px] truncate">{p.keperluan}</p>
+                      </td>
+
+                      {/* Tanggal */}
+                      <td className="px-5 py-3.5 hidden md:table-cell">
+                        <p className="text-xs text-slate-500">{p.tanggalAjuan}</p>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-5 py-3.5 text-center">
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${statusBadge(p.status)}`}>
+                          {p.status === "diproses" ? "⏳ Diproses"
+                            : p.status === "selesai" ? "✅ Selesai"
+                            : "❌ Ditolak"}
+                        </span>
+                      </td>
+
+                      {/* Aksi */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1.5 justify-center">
+                          {p.status === "diproses" ? (
+                            <>
+                              <button onClick={() => handleTerima(p.id)}
+                                className="px-3 py-1.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold hover:bg-green-100 transition-colors whitespace-nowrap">
+                                ✅ Terima
+                              </button>
+                              <button onClick={() => handleTolak(p.id)}
+                                className="px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors whitespace-nowrap">
+                                ❌ Tolak
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">Sudah diproses</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Footer — total */}
+              {pengajuanList.length > 5 && (
+                <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-center">
+                  <p className="text-xs text-slate-400">
+                    Menampilkan 5 dari <strong>{pengajuanList.length}</strong> pengajuan
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
       </main>
     </div>
   );

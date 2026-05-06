@@ -267,7 +267,7 @@ export const useStore = create<AppStore>()(
       updateDataDesa: (d) => set(s=>({dataDesa:{...s.dataDesa,...d}})),
     }),
     {
-      name: 'surat-desa-storage-v4',
+      name: 'surat-desa-storage-v8',
       version: 2,
       migrate: (persistedState, version) => {
         if (version < 2) {
