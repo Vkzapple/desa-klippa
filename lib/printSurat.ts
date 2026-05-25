@@ -84,7 +84,7 @@ export const generateSuratHTML = (surat: Surat, dataDesa: DataDesa): string => {
 
   <!-- KOP SURAT -->
   <div class="kop">
-    <img src="/logo-desa.png" alt="Logo Desa" class="kop-logo-img" onerror="this.style.display='none'" />
+    <img src="/logo-2.jpg" alt="Logo Desa" class="kop-logo-img" onerror="this.style.display='none'" />
     <div class="kop-text">
       <div class="line1">PEMERINTAH KABUPATEN DELI SERDANG</div>
       <div class="line2">KECAMATAN PERCUT SEI TUAN</div>
